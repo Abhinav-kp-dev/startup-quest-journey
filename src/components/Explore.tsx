@@ -1,6 +1,9 @@
 import { useState } from "react";
-import { Search, ThumbsUp, Users, Plus, Filter, TrendingUp, Eye } from "lucide-react";
+import { Search, ThumbsUp, Users, Plus, Filter, TrendingUp, Eye, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import GuildManager from "./GuildManager";
+import UserChat from "./UserChat";
+import useUserData, { User } from "@/hooks/useUserData";
 
 interface Idea {
   id: string;
@@ -14,13 +17,6 @@ interface Idea {
   hasUpvoted: boolean;
 }
 
-interface Guild {
-  id: string;
-  name: string;
-  description: string;
-  members: number;
-  category: string;
-}
 
 interface ExploreProps {
   onUpvote: (ideaId: string) => void;
@@ -30,7 +26,11 @@ const Explore = ({ onUpvote }: ExploreProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [showNewIdeaModal, setShowNewIdeaModal] = useState(false);
-  const [showGuildModal, setShowGuildModal] = useState(false);
+  const [showGuildManager, setShowGuildManager] = useState(false);
+  const [showUserChat, setShowUserChat] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+
+  const { users } = useUserData();
 
   const categories = ['all', 'tech', 'environment', 'health', 'fintech', 'education'];
 
@@ -70,29 +70,6 @@ const Explore = ({ onUpvote }: ExploreProps) => {
     }
   ]);
 
-  const [guilds] = useState<Guild[]>([
-    {
-      id: '1',
-      name: 'Green Tech Innovators',
-      description: 'Building sustainable technology solutions for a better planet',
-      members: 127,
-      category: 'environment'
-    },
-    {
-      id: '2',
-      name: 'HealthTech Pioneers',
-      description: 'Revolutionizing healthcare with digital solutions',
-      members: 89,
-      category: 'health'
-    },
-    {
-      id: '3',
-      name: 'FinTech Disruptors',
-      description: 'Creating the future of financial services',
-      members: 156,
-      category: 'fintech'
-    }
-  ]);
 
   const filteredIdeas = ideas.filter(idea => {
     const matchesSearch = idea.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -118,9 +95,9 @@ const Explore = ({ onUpvote }: ExploreProps) => {
             <Plus size={20} />
             Share Idea
           </Button>
-          <Button onClick={() => setShowGuildModal(true)} variant="outline">
+          <Button onClick={() => setShowGuildManager(true)} variant="outline">
             <Users size={20} />
-            Join Guild
+            Manage Guilds
           </Button>
         </div>
       </div>
@@ -178,7 +155,19 @@ const Explore = ({ onUpvote }: ExploreProps) => {
             <p className="text-muted-foreground text-sm mb-4 line-clamp-3">{idea.summary}</p>
             
             <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
-              <span>by {idea.author}</span>
+              <button
+                onClick={() => {
+                  const user = users.find(u => u.username === idea.author);
+                  if (user) {
+                    setSelectedUser(user);
+                    setShowUserChat(true);
+                  }
+                }}
+                className="flex items-center gap-1 hover:text-primary transition-colors"
+              >
+                <MessageCircle size={14} />
+                by {idea.author}
+              </button>
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-1">
                   <Eye size={14} />
@@ -207,32 +196,9 @@ const Explore = ({ onUpvote }: ExploreProps) => {
         ))}
       </div>
 
-      {/* Guilds Section */}
-      <div className="bg-card rounded-xl p-6 border border-border">
-        <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <Users className="text-primary" />
-          Active Guilds
-        </h2>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {guilds.map((guild) => (
-            <div key={guild.id} className="p-4 bg-muted rounded-lg border border-border">
-              <h3 className="font-bold mb-2">{guild.name}</h3>
-              <p className="text-muted-foreground text-sm mb-3">{guild.description}</p>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">{guild.members} members</span>
-                <Button variant="outline" size="sm">
-                  Join Guild
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Modals would be implemented here */}
+      {/* New Idea Modal */}
       {showNewIdeaModal && (
-        <div className="fixed inset-0 bg-background/80 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-card rounded-xl p-6 max-w-md w-full border border-border">
             <h3 className="text-xl font-bold mb-4">Share Your Idea</h3>
             <p className="text-muted-foreground mb-4">Coming soon! You'll be able to share your startup ideas here.</p>
@@ -243,16 +209,20 @@ const Explore = ({ onUpvote }: ExploreProps) => {
         </div>
       )}
 
-      {showGuildModal && (
-        <div className="fixed inset-0 bg-background/80 flex items-center justify-center p-4 z-50">
-          <div className="bg-card rounded-xl p-6 max-w-md w-full border border-border">
-            <h3 className="text-xl font-bold mb-4">Join a Guild</h3>
-            <p className="text-muted-foreground mb-4">Connect with like-minded entrepreneurs and collaborate on projects.</p>
-            <Button onClick={() => setShowGuildModal(false)} className="w-full">
-              Close
-            </Button>
-          </div>
-        </div>
+      {/* Components */}
+      <GuildManager
+        isOpen={showGuildManager}
+        onClose={() => setShowGuildManager(false)}
+      />
+      
+      {selectedUser && (
+        <UserChat
+          targetUser={selectedUser}
+          onClose={() => {
+            setShowUserChat(false);
+            setSelectedUser(null);
+          }}
+        />
       )}
     </div>
   );

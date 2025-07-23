@@ -84,7 +84,7 @@ const Chatbot = ({ isOpen, onToggle }: ChatbotProps) => {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 w-80 md:w-96 h-[500px] bg-card border border-border rounded-2xl shadow-2xl z-50 flex flex-col backdrop-blur-xl">
+    <div className="fixed bottom-4 right-4 md:bottom-6 md:right-6 w-[calc(100vw-2rem)] max-w-80 md:w-96 h-[70vh] md:h-[500px] bg-card border border-border rounded-2xl shadow-2xl z-50 flex flex-col backdrop-blur-xl">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-border/50 bg-gradient-to-r from-primary/5 to-secondary/5 rounded-t-2xl">
         <div className="flex items-center gap-3">
