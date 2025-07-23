@@ -20,16 +20,52 @@ interface ProfileProps {
 const Profile = ({ username, level, xp, badges, completedPhases, ideasShared, upvotesGiven }: ProfileProps) => {
   const earnedBadges = badges.filter(badge => badge.earned);
   
+  // RPG Character Avatar based on level
+  const getCharacterAvatar = (level: number) => {
+    if (level >= 10) {
+      return (
+        <div className="w-32 h-32 bg-gradient-to-b from-accent to-accent/70 rounded-lg border-4 border-accent/50 flex items-center justify-center relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-t from-accent/20 to-transparent"></div>
+          <div className="text-6xl">🧙‍♂️</div>
+          <div className="absolute -top-2 -right-2 w-8 h-8 bg-primary rounded-full border-2 border-primary-foreground flex items-center justify-center">
+            <span className="text-xs font-bold text-primary-foreground">★</span>
+          </div>
+        </div>
+      );
+    } else if (level >= 5) {
+      return (
+        <div className="w-32 h-32 bg-gradient-to-b from-secondary to-secondary/70 rounded-lg border-4 border-secondary/50 flex items-center justify-center relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-t from-secondary/20 to-transparent"></div>
+          <div className="text-6xl">🏗️</div>
+          <div className="absolute -top-2 -right-2 w-8 h-8 bg-secondary rounded-full border-2 border-secondary-foreground flex items-center justify-center">
+            <span className="text-xs font-bold text-secondary-foreground">⚡</span>
+          </div>
+        </div>
+      );
+    } else {
+      return (
+        <div className="w-32 h-32 bg-gradient-to-b from-primary to-primary/70 rounded-lg border-4 border-primary/50 flex items-center justify-center relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent"></div>
+          <div className="text-6xl">🚀</div>
+          <div className="absolute -top-2 -right-2 w-8 h-8 bg-muted rounded-full border-2 border-muted-foreground flex items-center justify-center">
+            <span className="text-xs font-bold text-muted-foreground">🌟</span>
+          </div>
+        </div>
+      );
+    }
+  };
+  
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       <div className="bg-card rounded-xl p-8 border border-border">
-        <div className="flex items-center gap-6 mb-6">
-          <div className="bg-primary text-primary-foreground p-4 rounded-full">
-            <User size={48} />
+        {/* RPG Character Avatar */}
+        <div className="flex flex-col items-center mb-8">
+          <div className="mb-4">
+            {getCharacterAvatar(level)}
           </div>
-          <div>
-            <h1 className="text-3xl font-bold">{username}</h1>
-            <p className="text-muted-foreground">Level {level} Entrepreneur</p>
+          <div className="text-center">
+            <h1 className="text-3xl font-bold mb-2">{username}</h1>
+            <p className="text-xl text-muted-foreground mb-1">Level {level} Entrepreneur</p>
             <p className="text-sm text-muted-foreground">{xp} Total XP Earned</p>
           </div>
         </div>

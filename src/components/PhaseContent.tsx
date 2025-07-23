@@ -1,10 +1,23 @@
-import { CheckCircle, Clock, Target, Users, DollarSign, MessageSquare, TrendingUp } from "lucide-react";
+import { CheckCircle, Clock, Target, Users, DollarSign, MessageSquare, TrendingUp, Send } from "lucide-react";
+import { useState } from "react";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 
 interface PhaseContentProps {
   phase: string;
 }
 
 const PhaseContent = ({ phase }: PhaseContentProps) => {
+  const [taskInputs, setTaskInputs] = useState<Record<string, string>>({});
+  const [submittedTasks, setSubmittedTasks] = useState<Record<string, boolean>>({});
+  const [showSuccessMessage, setShowSuccessMessage] = useState<string | null>(null);
+
+  const handleTaskSubmit = (taskId: string, taskName: string, content: string) => {
+    setSubmittedTasks(prev => ({ ...prev, [taskId]: true }));
+    setTaskInputs(prev => ({ ...prev, [taskId]: '' }));
+    setShowSuccessMessage(`Task "${taskName}" saved successfully!`);
+    setTimeout(() => setShowSuccessMessage(null), 3000);
+  };
   const getPhaseContent = () => {
     switch (phase) {
       case 'validation':
@@ -150,18 +163,54 @@ const PhaseContent = ({ phase }: PhaseContentProps) => {
         </div>
       </div>
 
-      {/* Tasks Checklist */}
+      {/* Success Message */}
+      {showSuccessMessage && (
+        <div className="bg-secondary/10 border border-secondary text-secondary-foreground rounded-xl p-4 animate-fade-in">
+          <p className="font-medium">{showSuccessMessage}</p>
+        </div>
+      )}
+
+      {/* Task Forms */}
       <div className="bg-card rounded-xl p-6 border border-border">
         <h2 className="text-2xl font-bold mb-6">Phase Tasks</h2>
-        <div className="space-y-4">
-          {content.tasks.map((task, index) => (
-            <div key={index} className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-              <div className="w-6 h-6 rounded-full border-2 border-primary flex items-center justify-center">
-                <CheckCircle size={16} className="text-primary opacity-0 hover:opacity-100 transition-opacity" />
+        <div className="space-y-6">
+          {content.tasks.map((task, index) => {
+            const taskId = `${phase}-task-${index}`;
+            const isSubmitted = submittedTasks[taskId];
+            const inputValue = taskInputs[taskId] || '';
+            
+            return (
+              <div key={index} className="p-4 bg-muted rounded-lg border border-border">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
+                    isSubmitted ? 'border-secondary bg-secondary' : 'border-primary'
+                  }`}>
+                    {isSubmitted && <CheckCircle size={16} className="text-secondary-foreground" />}
+                  </div>
+                  <h3 className="font-medium">{task}</h3>
+                </div>
+                
+                <div className="space-y-3">
+                  <Textarea
+                    placeholder={`Enter your progress for: ${task}`}
+                    value={inputValue}
+                    onChange={(e) => setTaskInputs(prev => ({ ...prev, [taskId]: e.target.value }))}
+                    className="min-h-[80px] resize-none"
+                    disabled={isSubmitted}
+                  />
+                  <Button
+                    onClick={() => handleTaskSubmit(taskId, task, inputValue)}
+                    disabled={!inputValue.trim() || isSubmitted}
+                    size="sm"
+                    className="w-full"
+                  >
+                    <Send size={16} className="mr-2" />
+                    {isSubmitted ? 'Task Completed' : 'Submit Task'}
+                  </Button>
+                </div>
               </div>
-              <span className="font-medium">{task}</span>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
